@@ -11,7 +11,7 @@
             "configurable"
         ],
         "displayName": "Ajiejoy Watchface",
-        "enableMultiJS": false,
+        "enableMultiJS": true,
         "messageKeys": [
             "BackgroundColor",
             "TextColor"

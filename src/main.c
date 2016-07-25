@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "main.h"
 
 static Window *s_main_window;
 static TextLayer *s_time_layer;
@@ -8,11 +9,47 @@ static int s_battery_level;
 static GColor bg_color;
 static GFont s_font;
 
+ClaySettings settings;
+
+// Initialize the default settings
+static void prv_default_settings() {
+  settings.BackgroundColor = GColorBlack;
+  settings.TextColor = GColorWhite;
+}
+
+static void prv_load_settings() {
+  // Load the default settings
+  prv_default_settings();
+  // Read settings from persistent storage, if they exist
+  persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));
+}
+
+// Update the display elements
+static void prv_update_display() {
+
+  text_layer_set_text_color(s_time_layer, settings.TextColor);
+
+ 
+}
+
+// Save the settings to persistent storage
+static void prv_save_settings() {
+  persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
+  // Update the display based on new settings
+  prv_update_display();
+}
+
 static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) {
   Tuple *bg_color_t = dict_find(iter, MESSAGE_KEY_BackgroundColor);
   if(bg_color_t) {
-    bg_color = GColorFromHEX(bg_color_t->value->int32);
+    settings.TextColor = GColorFromHEX(bg_color_t->value->int32);
   }
+  Tuple *text_color_t = dict_find(iter, MESSAGE_KEY_TextColor);
+  if(text_color_t) {
+    settings.BackgroundColor = GColorFromHEX(bg_color_t->value->int32);
+  }
+  
+  prv_save_settings();
 }
 
 static void update_time() {
@@ -81,7 +118,7 @@ static void main_window_unload(Window *window) {
 static void init() {
   // Create main Window element and assign to pointer
   s_main_window = window_create();
-
+  prv_load_settings();
   // Set handlers to manage the elements inside the Window
   window_set_window_handlers(s_main_window, (WindowHandlers) {
     .load = main_window_load,
@@ -105,6 +142,10 @@ static void init() {
   // Register with battery service
   battery_state_service_subscribe(battery_callback);
   battery_callback(battery_state_service_peek());
+  
+  // Listen for AppMessages
+  app_message_register_inbox_received(prv_inbox_received_handler);
+  app_message_open(128, 128);
   
   // Register with TickTimerService  
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
