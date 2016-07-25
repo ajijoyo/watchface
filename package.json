@@ -1,0 +1,50 @@
+{
+    "author": "zhendt@gmail.com",
+    "dependencies": {
+        "pebble-clay": "^1.0.2"
+    },
+    "keywords": [],
+    "name": "ajiejoy-s",
+    "pebble": {
+        "capabilities": [
+            "location",
+            "configurable"
+        ],
+        "displayName": "Ajiejoy Watchface",
+        "enableMultiJS": false,
+        "messageKeys": [
+            "BackgroundColor",
+            "TextColor"
+        ],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "characterRegex": "[0-9:A-Za-z ]",
+                    "file": "fonts/Kasih Bold.otf",
+                    "name": "KASIH_48",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "characterRegex": "[0-9:A-Za-z ]",
+                    "file": "fonts/28 Days Later.ttf",
+                    "name": "FONT_28DAYS_REG_SUBSET_24",
+                    "targetPlatforms": null,
+                    "type": "font"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk"
+        ],
+        "uuid": "6d7fd763-e88d-4a94-a73f-5a1c949f86c4",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.0.0"
+}
