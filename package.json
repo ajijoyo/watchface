@@ -14,7 +14,8 @@
         "enableMultiJS": true,
         "messageKeys": [
             "BackgroundColor",
-            "TextColor"
+            "TextColor",
+            "BarColor"
         ],
         "projectType": "native",
         "resources": {
@@ -23,13 +24,6 @@
                     "characterRegex": "[0-9:A-Za-z ]",
                     "file": "fonts/Kasih Bold.otf",
                     "name": "KASIH_48",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
-                    "characterRegex": "[0-9:A-Za-z ]",
-                    "file": "fonts/28 Days Later.ttf",
-                    "name": "FONT_28DAYS_REG_SUBSET_24",
                     "targetPlatforms": null,
                     "type": "font"
                 }
@@ -41,7 +35,7 @@
             "basalt",
             "chalk"
         ],
-        "uuid": "6d7fd763-e88d-4a94-a73f-5a1c949f86c4",
+        "uuid": "4d8aa063-8fcb-411a-887c-eeb8a57abc33",
         "watchapp": {
             "watchface": true
         }

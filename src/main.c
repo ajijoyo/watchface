@@ -2,19 +2,19 @@
 #include "main.h"
 
 static Window *s_main_window;
-static TextLayer *s_time_layer;
+static TextLayer *s_time_layer , *s_date_layer;
 
 static Layer  *s_battery_layer;
 static int s_battery_level;
-static GColor bg_color;
 static GFont s_font;
 
 ClaySettings settings;
 
 // Initialize the default settings
 static void prv_default_settings() {
-  settings.BackgroundColor = GColorBlack;
-  settings.TextColor = GColorWhite;
+  settings.BackgroundColor = GColorWhite;
+  settings.TextColor = GColorBlack;
+  settings.BarColor = GColorBrightGreen;
 }
 
 static void prv_load_settings() {
@@ -28,8 +28,8 @@ static void prv_load_settings() {
 static void prv_update_display() {
 
   text_layer_set_text_color(s_time_layer, settings.TextColor);
-
- 
+  window_set_background_color(s_main_window,settings.BackgroundColor);
+  text_layer_set_text_color(s_date_layer, settings.TextColor);
 }
 
 // Save the settings to persistent storage
@@ -40,13 +40,21 @@ static void prv_save_settings() {
 }
 
 static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) {
+  //get background color value
   Tuple *bg_color_t = dict_find(iter, MESSAGE_KEY_BackgroundColor);
   if(bg_color_t) {
-    settings.TextColor = GColorFromHEX(bg_color_t->value->int32);
+    settings.BackgroundColor = GColorFromHEX(bg_color_t->value->int32);
   }
+  //get text color value
   Tuple *text_color_t = dict_find(iter, MESSAGE_KEY_TextColor);
   if(text_color_t) {
-    settings.BackgroundColor = GColorFromHEX(bg_color_t->value->int32);
+    settings.TextColor = GColorFromHEX(text_color_t->value->int32);
+  }
+  
+  //get bar color value
+  Tuple *bar_color_t = dict_find(iter, MESSAGE_KEY_BarColor);
+  if(bar_color_t) {
+    settings.BarColor = GColorFromHEX(bar_color_t->value->int32);
   }
   
   prv_save_settings();
@@ -61,6 +69,10 @@ static void update_time() {
   static char s_buffer[8];
   strftime(s_buffer, sizeof(s_buffer), clock_is_24h_style() ? "%H.%M" : "%I.%M", tick_time);
 
+  //get date 
+  static char date_buffer[16];
+  strftime(date_buffer, sizeof(date_buffer), "%A, %e %b %Y", tick_time);
+  
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, s_buffer);
 }
@@ -100,13 +112,25 @@ static void main_window_load(Window *window) {
   s_time_layer = text_layer_create(
       GRect(0, 4, bounds.size.w, 50));
   text_layer_set_background_color(s_time_layer, GColorClear);
-  text_layer_set_text_color(s_time_layer, bg_color);
+  text_layer_set_text_color(s_time_layer, GColorBlack);
   text_layer_set_text(s_time_layer, "00:00");
   text_layer_set_font(s_time_layer,fonts_get_system_font(FONT_KEY_LECO_26_BOLD_NUMBERS_AM_PM));
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
   
+  // Create battery meter Layer
+  s_battery_layer = layer_create(GRect(14, 55, 115, 3));
+  layer_add_child(window_get_root_layer(s_main_window), s_battery_layer);
+  
+  //create datelayer
+  s_date_layer = text_layer_create(GRect(0, 59, bounds.size.w, 30));
+  text_layer_set_text_color(s_date_layer, GColorBlack);
+  text_layer_set_background_color(s_date_layer, GColorClear);
+  text_layer_set_font(s_time_layer,fonts_get_system_font(FONT_KEY_LECO_20_BOLD_NUMBERS));
+  text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
+  
   // Add it as a child layer to the Window's root layer
   layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
+  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
 }
 
 static void main_window_unload(Window *window) {
@@ -119,6 +143,7 @@ static void init() {
   // Create main Window element and assign to pointer
   s_main_window = window_create();
   prv_load_settings();
+  
   // Set handlers to manage the elements inside the Window
   window_set_window_handlers(s_main_window, (WindowHandlers) {
     .load = main_window_load,
@@ -132,16 +157,11 @@ static void init() {
   // Make sure the time is displayed from the start
   update_time();
   
-  // Create battery meter Layer
-  s_battery_layer = layer_create(GRect(14, 2, 115, 4));
-  layer_set_update_proc(s_battery_layer, battery_update_proc);
   
-  // Add to Window
-  layer_add_child(window_get_root_layer(s_main_window), s_battery_layer);
-
   // Register with battery service
   battery_state_service_subscribe(battery_callback);
   battery_callback(battery_state_service_peek());
+  layer_set_update_proc(s_battery_layer, battery_update_proc);
   
   // Listen for AppMessages
   app_message_register_inbox_received(prv_inbox_received_handler);
