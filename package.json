@@ -21,9 +21,9 @@
         "resources": {
             "media": [
                 {
-                    "characterRegex": "[0-9:A-Za-z\u00b0 ]",
+                    "characterRegex": "[0-9:,A-Za-z\u00b0 ]",
                     "file": "fonts/Kasih Bold.otf",
-                    "name": "KASIH_20",
+                    "name": "KASIH_14",
                     "targetPlatforms": null,
                     "type": "font"
                 }

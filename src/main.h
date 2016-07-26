@@ -15,6 +15,7 @@ static void prv_save_settings();
 static void prv_update_display();
 static void update_time();
 static void init();
+static char getdays(char chr);
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed);
 static void battery_update_proc(Layer *layer, GContext *ctx);
 static void battery_callback(BatteryChargeState state);

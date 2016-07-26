@@ -71,10 +71,11 @@ static void update_time() {
 
   //get date 
   static char date_buffer[16];
-  strftime(date_buffer, sizeof(date_buffer), "%A, %e %b %Y", tick_time);
+  strftime(date_buffer, sizeof(date_buffer), "%a %e %b %Y", tick_time);
   
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, s_buffer);
+  text_layer_set_text(s_date_layer, date_buffer);
 }
 
 
@@ -110,7 +111,7 @@ static void main_window_load(Window *window) {
 
   // Create the TextLayer with specific bounds
   s_time_layer = text_layer_create(
-      GRect(0, 4, bounds.size.w, 50));
+      GRect(0, 4, bounds.size.w, 28));
   text_layer_set_background_color(s_time_layer, GColorClear);
   text_layer_set_text_color(s_time_layer, GColorBlack);
   text_layer_set_text(s_time_layer, "00:00");
@@ -118,14 +119,14 @@ static void main_window_load(Window *window) {
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
   
   // Create battery meter Layer
-  s_battery_layer = layer_create(GRect(14, 55, 115, 3));
+  s_battery_layer = layer_create(GRect(14, 33, 115, 2));
   layer_add_child(window_get_root_layer(s_main_window), s_battery_layer);
   
   //create datelayer
-  s_date_layer = text_layer_create(GRect(0, 59, bounds.size.w, 30));
+  s_date_layer = text_layer_create(GRect(0, 37, bounds.size.w, 24));
   text_layer_set_text_color(s_date_layer, GColorBlack);
   text_layer_set_background_color(s_date_layer, GColorClear);
-  text_layer_set_font(s_time_layer,s_font);
+//   text_layer_set_font(s_date_layer,s_font);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
   
   // Add it as a child layer to the Window's root layer
@@ -143,6 +144,7 @@ static void init() {
   // Create main Window element and assign to pointer
   s_main_window = window_create();
   prv_load_settings();
+  s_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_KASIH_14));
   
   // Set handlers to manage the elements inside the Window
   window_set_window_handlers(s_main_window, (WindowHandlers) {
@@ -150,7 +152,6 @@ static void init() {
     .unload = main_window_unload
   });
   
-  s_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_KASIH_20));
   // Show the Window on the watch, with animated=true
   window_stack_push(s_main_window, true);
 
