@@ -125,7 +125,7 @@ static void main_window_load(Window *window) {
   s_date_layer = text_layer_create(GRect(0, 59, bounds.size.w, 30));
   text_layer_set_text_color(s_date_layer, GColorBlack);
   text_layer_set_background_color(s_date_layer, GColorClear);
-  text_layer_set_font(s_time_layer,fonts_get_system_font(FONT_KEY_LECO_20_BOLD_NUMBERS));
+  text_layer_set_font(s_time_layer,s_font);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
   
   // Add it as a child layer to the Window's root layer
@@ -150,7 +150,7 @@ static void init() {
     .unload = main_window_unload
   });
   
-  s_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_KASIH_48));
+  s_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_KASIH_20));
   // Show the Window on the watch, with animated=true
   window_stack_push(s_main_window, true);
 
