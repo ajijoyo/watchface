@@ -4,9 +4,11 @@
 static Window *s_main_window;
 static TextLayer *s_time_layer , *s_date_layer;
 
-static Layer  *s_battery_layer;
+static Layer  *s_battery_layer, *s_canvas_layer;
 static int s_battery_level;
 static GFont s_font;
+static GRect bitmap_bounds;
+static GBitmap *s_bitmap;
 
 ClaySettings settings;
 
@@ -60,6 +62,14 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   prv_save_settings();
 }
 
+static void canvas_update_proc(Layer *layer, GContext *ctx) {
+  // Set the compositing mode (GCompOpSet is required for transparency)
+  graphics_context_set_compositing_mode(ctx, GCompOpSet);
+  GRect bounds = layer_get_bounds(layer);
+  // Draw the image
+  graphics_draw_bitmap_in_rect(ctx, s_bitmap, GRect((bounds.size.w -bitmap_bounds.size.w) / 2,63,bitmap_bounds.size.w,bitmap_bounds.size.h));
+}
+
 static void update_time() {
   // Get a tm structure
   time_t temp = time(NULL); 
@@ -94,8 +104,10 @@ static void battery_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
 
   // Draw the bar
-  graphics_context_set_fill_color(ctx, GColorBrightGreen);
+  graphics_context_set_fill_color(ctx, settings.BarColor);
   graphics_fill_rect(ctx, GRect(0, 0, width, bounds.size.h), 0, GCornerNone);
+  
+  
 }
 
 static void battery_callback(BatteryChargeState state) {
@@ -126,9 +138,14 @@ static void main_window_load(Window *window) {
   s_date_layer = text_layer_create(GRect(0, 37, bounds.size.w, 24));
   text_layer_set_text_color(s_date_layer, GColorBlack);
   text_layer_set_background_color(s_date_layer, GColorClear);
-//   text_layer_set_font(s_date_layer,s_font);
+  text_layer_set_font(s_date_layer,s_font);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
   
+  s_canvas_layer = layer_create(bounds);
+  bitmap_bounds = gbitmap_get_bounds(s_bitmap);
+  layer_set_update_proc(s_canvas_layer, canvas_update_proc);
+  // Add to Window
+  layer_add_child(window_get_root_layer(window), s_canvas_layer);
   // Add it as a child layer to the Window's root layer
   layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
@@ -137,14 +154,18 @@ static void main_window_load(Window *window) {
 static void main_window_unload(Window *window) {
   // Destroy TextLayer
   text_layer_destroy(s_time_layer);
+  text_layer_destroy(s_date_layer);
+  layer_destroy(s_canvas_layer);
   layer_destroy(s_battery_layer);
+  gbitmap_destroy(s_bitmap);
 }
 
 static void init() {
   // Create main Window element and assign to pointer
   s_main_window = window_create();
   prv_load_settings();
-  s_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_KASIH_14));
+  s_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_PRIMER_18));
+  s_bitmap = gbitmap_create_with_resource(RESOURCE_ID_BLUETOOTH2);
   
   // Set handlers to manage the elements inside the Window
   window_set_window_handlers(s_main_window, (WindowHandlers) {
@@ -162,6 +183,7 @@ static void init() {
   // Register with battery service
   battery_state_service_subscribe(battery_callback);
   battery_callback(battery_state_service_peek());
+  
   layer_set_update_proc(s_battery_layer, battery_update_proc);
   
   // Listen for AppMessages

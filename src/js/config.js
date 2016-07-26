@@ -4,10 +4,6 @@ module.exports = [
     "defaultValue": "App Configuration"
   },
   {
-    "type": "text",
-    "defaultValue": "Here is some introductory text."
-  },
-  {
     "type": "section",
     "items": [
       {
